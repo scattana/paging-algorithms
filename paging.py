@@ -202,15 +202,80 @@ def optimal(refs_original, page_table_size):
         
     show_results("Optimal", hits, misses)
     
+
+# utility function to perform linear search for int key within a list (return index if key found in list)
+def scan_list(ls, key):
+    for index, item in enumerate(ls):
+        if key == item[0]:
+            return index
+    return -1
+    
         
-def rule_of_three(refs_original, page_table_size):
-    print('test')
+def wait_and_confirm(refs_original, page_table_size):
     hits = 0
     misses = 0
     page_table = OrderedDict();
+    temp_table = []
+    tt_max_size = page_table_size // 10             # temp table is 10% as large as the full page table (max)
     refs = []
     for item in refs_original:
-        print(item)
+        refs.append(item[0:4])                      # 3 usual bits + 1 for "confirmation" bit, init. to 0
+    for ref in refs:
+        if len(temp_table) < tt_max_size:
+            tmp = scan_list(temp_table, ref[0])
+            if tmp != -1:
+                hits += 1
+                continue
+            temp_table.append(ref)
+            misses += 1
+        else:
+            val = scan_list(temp_table, ref[0])
+            if val != -1:                           # page hit in the temp table
+                temp = temp_table.pop(val)
+                temp[3] = 1                         # set  confirmation bit to indicate locality reference
+                hits += 1
+                if temp[0] in page_table:
+                    continue                        # to prevent evicting a 'good' page
+                flag = False
+                if len(page_table) < page_table_size:
+                    page_table[temp[0]] = [temp[1], temp[2], temp[3]]
+                else:
+                    for key in page_table:
+                        if page_table[key][2] == 0:
+                            page_table.pop(key)
+                            flag = True
+                            break
+                    if not flag:
+                        for key in page_table:
+                            page_table.pop(key)         # pop first item, since all pages in page table were already "confirmed"
+                            break
+                    page_table[temp[0]] = [temp[1], temp[2], temp[3]]
+            else:
+                if ref[0] in page_table:
+                    hits += 1
+                else:
+                    misses += 1
+                    if len(page_table) < page_table_size:
+                        page_table[ref[0]] = [ref[1], ref[2], ref[3]]
+                    else:                           # evict first non-confirmed page
+                        flag = False
+                        for key in page_table:
+                            if page_table[key][2] == 0:
+                                page_table.pop(key)
+                                flag = True
+                                page_table[ref[0]] = [ref[1], ref[2], ref[3]]
+                                break
+                        if not flag:
+                            for key in page_table:
+                                page_table.pop(key)
+                                page_table[ref[0]] = [ref[1], ref[2], ref[3]]
+                                break
+
+    show_results("Wait and Confirm", hits, misses)
+                        
+                        
+                    
+                
                 
                 
 
@@ -232,7 +297,7 @@ def main(in_file, page_table_size):
     nru(refs, page_table_size)
     second_chance(refs, page_table_size)
     aging(refs, page_table_size)
-    rule_of_three(refs, page_table_size)            # my own algorithm; see report or implementation details in function
+    wait_and_confirm(refs, page_table_size)            # my own algorithm; see report or implementation details in function
 
     
 def generate_file(num_references, max_page_num):
