@@ -216,7 +216,7 @@ def wait_and_confirm(refs_original, page_table_size):
     misses = 0
     page_table = OrderedDict();
     temp_table = []
-    tt_max_size = page_table_size // 10             # temp table is 10% as large as the full page table (max)
+    tt_max_size = page_table_size // 3              # temp table is roughly 1/3 large as the full page table (max)
     refs = []
     for item in refs_original:
         refs.append(item[0:4])                      # 3 usual bits + 1 for "confirmation" bit, init. to 0
@@ -274,9 +274,6 @@ def wait_and_confirm(refs_original, page_table_size):
     show_results("Wait and Confirm", hits, misses)
                         
                         
-                    
-                
-                
                 
 
 def main(in_file, page_table_size):
@@ -320,8 +317,13 @@ def generate_file(num_references, max_page_num):
 
                      
 if __name__ == "__main__":
-    page_table_size = 100
+    generate_random_file = False
+    default_file_name = "test-references.txt"
+    page_table_size = 5
     num_references = 1000
     max_page_num = 150
-    file = generate_file(num_references, max_page_num)
-    main(file, page_table_size)
+    if generate_random_file:
+        file = generate_file(num_references, max_page_num)  
+        main(file, page_table_size)
+    else:
+        main(default_file_name, page_table_size)
