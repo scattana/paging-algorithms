@@ -1,4 +1,4 @@
-***Randomly-generated page references:
+###Randomly-generated page references:
 
 Parameters used:
 - page size 			= 100
@@ -17,7 +17,7 @@ Parameters used:
 
 
 
-***Human-generated page references:
+###Human-generated page references:
 
 Parameters used:
 - page size				= 5
